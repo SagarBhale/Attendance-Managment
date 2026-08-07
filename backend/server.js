@@ -45,6 +45,23 @@ app.use(
   })
 );
 
+// Root welcome route
+app.get('/', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'Attendance Management System API is running smoothly 🚀',
+    version: '1.0.0',
+    endpoints: {
+      health: '/health',
+      auth: '/api/auth',
+      attendance: '/api/attendance',
+      overtime: '/api/overtime',
+      reports: '/api/reports',
+      users: '/api/users',
+    },
+  });
+});
+
 // Health check
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'OK', timestamp: new Date().toISOString() });
