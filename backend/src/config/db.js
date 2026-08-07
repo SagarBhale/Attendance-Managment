@@ -9,6 +9,10 @@ const connectDB = async () => {
     }
     const conn = await mongoose.connect(uri);
     logger.info(`MongoDB Connected: ${conn.connection.host}`);
+    
+    // Auto-seed database if empty (ensures demo accounts exist in cloud DB)
+    const seedDB = require('../../seed');
+    await seedDB(false);
   } catch (error) {
     logger.error(`MongoDB connection error: ${error.message}`);
     process.exit(1);

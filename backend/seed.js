@@ -1,19 +1,22 @@
-require('dotenv').config();
-const mongoose = require('mongoose');
 const User = require('./src/models/User');
 const Attendance = require('./src/models/Attendance');
 const OvertimeRequest = require('./src/models/OvertimeRequest');
 const logger = require('./src/config/logger');
 
-const seedDB = async () => {
+const seedDB = async (shouldExit = true) => {
   try {
-    await mongoose.connect(process.env.MONGO_URI);
-    logger.info('Connected to MongoDB for seeding');
+    const userCount = await User.countDocuments();
+    if (userCount > 0 && !shouldExit) {
+      logger.info('Database already contains users. Skipping auto-seed.');
+      return;
+    }
 
-    // Clear existing data
-    await User.deleteMany({});
-    await Attendance.deleteMany({});
-    await OvertimeRequest.deleteMany({});
+    // Clear existing data if manual seed run
+    if (shouldExit) {
+      await User.deleteMany({});
+      await Attendance.deleteMany({});
+      await OvertimeRequest.deleteMany({});
+    }
 
     // Create Admin
     const admin = await User.create({
@@ -53,7 +56,7 @@ const seedDB = async () => {
     const punchInTime = new Date();
     punchInTime.setHours(9, 0, 0, 0);
 
-    const attendance = await Attendance.create({
+    await Attendance.create({
       userId: employee._id,
       date: today,
       punchIn: {
@@ -67,11 +70,17 @@ const seedDB = async () => {
     });
 
     logger.info('Sample Attendance Record Created for Today');
-    process.exit(0);
+    if (shouldExit) process.exit(0);
   } catch (error) {
     logger.error(`Seeding error: ${error.message}`);
-    process.exit(1);
+    if (shouldExit) process.exit(1);
   }
 };
 
-seedDB();
+module.exports = seedDB;
+
+if (require.main === module) {
+  require('dotenv').config();
+  const mongoose = require('mongoose');
+  mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/attendance_db').then(() => seedDB(true));
+}
