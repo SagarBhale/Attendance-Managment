@@ -4,7 +4,8 @@ const User = require('../models/User');
 const logger = require('../config/logger');
 
 const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRE || '7d' });
+  const secret = process.env.JWT_SECRET || 'attendiq_super_secret_jwt_key_2026';
+  return jwt.sign({ id }, secret, { expiresIn: process.env.JWT_EXPIRE || '7d' });
 };
 
 // @desc    Register user
